@@ -14,22 +14,28 @@ using namespace std::chrono;
 class Vehicle {
 protected:
     string ownerName, vehicleNumber, vehicleName, vehicleID;
+    bool isVip;
     system_clock::time_point entryTime;
 
 
 public:
+    Vehicle() :isVip(false) {};
     virtual void calculateFee(int hours) = 0;
 
-    void setDetails(string name, string num, string vname, string id) {
+    void setDetails(string name, string num, string vname, string id,bool vipStatus=false) {
         ownerName = name;
         vehicleNumber = num;
         vehicleName = vname;
         vehicleID = id;
+        isVip = vipStatus;
         entryTime = system_clock::now();
     }
 
     string getVehicleID() {
         return vehicleID;
+    }
+    bool getVipStatus() {
+        return isVip;
     }
 
     void displayDetails() {
@@ -37,6 +43,7 @@ public:
         cout << "Vehicle Number: " << vehicleNumber << endl;
         cout << "Vehicle Name: " << vehicleName << endl;
         cout << "Vehicle ID: " << vehicleID << endl;
+        cout << "VIP Status: " << (isVip ? "Yes" : "No") << endl;
     }
     system_clock::time_point getEntryTime() {
         return entryTime;
@@ -45,36 +52,58 @@ public:
 
 class Car : public Vehicle {
     void calculateFee(int hours) override {
-        cout << "Parking fee for car: Rs " << hours * 50 << endl;
+        int fee = hours * 50;
+        if (isVip) {
+            fee -= 10;  
+            cout << "VIP Discount Applied!" << endl;
+        }
+        fee = max(fee, 0);
+        cout << "Parking fee for car: Rs " << fee << endl;
     }
+
 };
 
 class Bike : public Vehicle {
     void calculateFee(int hours) override {
-        cout << "Parking fee for bike: Rs " << hours * 25 << endl;
+        int fee = hours * 25;
+        if (isVip) {
+            fee -= 5;  
+            cout << "VIP Discount Applied!" << endl;
+        }
+        fee = max(fee, 0);
+        cout << "Parking fee for bike: Rs " << fee << endl;
     }
+
 };
 
 class ParkingSlot {
 protected:
     static int totalSlots;
     static int availableSlots;
+    static int vipSlots;
+
 
 public:
-    static void initializeSlots(int total) {
+    static void initializeSlots(int total,int vip=0) {
         totalSlots = total;
         availableSlots = total;
+        vipSlots = vip;
     }
 
-    static void allocateSlot() {
-        if (availableSlots > 0) {
+
+    static void allocateSlot(bool isVIP) {
+        if (isVIP && vipSlots > 0) {
+            vipSlots--;
+            cout << "VIP Slot allocated!" << endl;
+        }
+        else if (availableSlots > 0) {
             availableSlots--;
-            cout << "Slot allocated!" << endl;
-            cout << "Total slots left: " << availableSlots << endl;
+            cout << "Regular slot allocated!" << endl;
         }
         else {
             cout << "No slots available!" << endl;
         }
+        cout << "Available slots: " << availableSlots << endl;
     }
 
     static void freeSlot() {
@@ -91,6 +120,7 @@ public:
 
 int ParkingSlot::totalSlots = 0;
 int ParkingSlot::availableSlots = 0;
+int ParkingSlot::vipSlots = 0;
 
 string generateUniqueID() {
     srand(time(0));
@@ -123,9 +153,10 @@ void removeVehicleDetails(const string& id) {
 
     if (file.is_open() && tempFile.is_open()) {
         while (getline(file, line)) {
-            if (line.find(id) != string::npos) {
+            // Check if the current line contains the specific Vehicle ID
+            if (line.find("Vehicle ID: " + id) != string::npos) {
                 vehicleFound = true;
-                // Skip the next 3 lines of the vehicle's details (because of the format in the file)
+                // Skip the next lines related to this vehicle record
                 for (int i = 0; i < 3 && getline(file, line); i++);
             }
             else {
@@ -149,6 +180,7 @@ void removeVehicleDetails(const string& id) {
         cout << "Unable to open file for removal!" << endl;
     }
 }
+
 void viewParkingReport() {
     ifstream file("vehicle_details.txt");
     string line;
@@ -201,7 +233,7 @@ void menu() {
 }
 
 int main() {
-    ParkingSlot::initializeSlots(50);
+    ParkingSlot::initializeSlots(50,10);
 
     Vehicle* vehicles[50];  // Array to store pointers to vehicles
     int vehicleCount = 0;    // Counter for registered vehicles
@@ -211,7 +243,7 @@ int main() {
 
     int choice, hours;
     string num, name, type, vname, id;
-    bool found = false;
+    bool isVip, found = false;
     do {
         menu();
         cin >> choice;
@@ -227,6 +259,8 @@ int main() {
             getline(cin, vname);
             cout << "Enter your vehicle type (Car/Bike): ";
             getline(cin, type);
+            cout << "Is the owner a VIP? (1 for Yes, 0 for No): ";
+            cin >> isVip;
 
             id = generateUniqueID();
 
@@ -241,9 +275,9 @@ int main() {
                 break;
             }
 
-            vehicles[vehicleCount]->setDetails(name, num, vname, id);
+            vehicles[vehicleCount]->setDetails(name, num, vname, id,isVip);
             saveVehicleDetails(name, num, vname, id);
-            ParkingSlot::allocateSlot();  // Allocate slot after registration
+            ParkingSlot::allocateSlot(isVip);  // Allocate slot after registration
             vehicleCount++;  // Increment the vehicle count
             cout << "Assigned Vehicle ID: " << id << endl;
             break;
