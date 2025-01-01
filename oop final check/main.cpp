@@ -6,11 +6,16 @@
 #include <cstdlib>
 #include <ctime>
 #include <vector>
+#include<chrono>
 using namespace std;
+using namespace std::chrono;
+
 
 class Vehicle {
 protected:
     string ownerName, vehicleNumber, vehicleName, vehicleID;
+    system_clock::time_point entryTime;
+
 
 public:
     virtual void calculateFee(int hours) = 0;
@@ -20,6 +25,7 @@ public:
         vehicleNumber = num;
         vehicleName = vname;
         vehicleID = id;
+        entryTime = system_clock::now();
     }
 
     string getVehicleID() {
@@ -31,6 +37,9 @@ public:
         cout << "Vehicle Number: " << vehicleNumber << endl;
         cout << "Vehicle Name: " << vehicleName << endl;
         cout << "Vehicle ID: " << vehicleID << endl;
+    }
+    system_clock::time_point getEntryTime() {
+        return entryTime;
     }
 };
 
@@ -245,11 +254,16 @@ int main() {
             cout << "Enter Vehicle ID to Exit: ";
             cin >> id;
 
-           
+
             for (int i = 0; i < vehicleCount; i++) {
                 if (vehicles[i]->getVehicleID() == id) {
-                    cout << "Enter Parking Hours: ";
-                    cin >> hours;
+                    auto exitTime = system_clock::now();
+                    auto duration = duration_cast<std::chrono::hours>(exitTime - vehicles[i]->getEntryTime());  // Calculate the time difference in hours
+                    int hours = duration.count();
+
+                    cout << "Vehicle was parked for " << hours << " hours." << endl;
+
+
                     vehicles[i]->calculateFee(hours);
                     ParkingSlot::freeSlot();  // Free slot after vehicle exits
                     removeVehicleDetails(id);  // Remove vehicle details from file
