@@ -9,6 +9,11 @@
 #include<chrono>
 using namespace std;
 using namespace std::chrono;
+#define RESET "\033[0m"
+#define RED "\033[1;31m"
+#define GREEN "\033[1;32m"
+#define YELLOW "\033[1;33m"
+#define BLUE "\033[1;34m"
 
 
 class Vehicle {
@@ -222,14 +227,14 @@ void displayRegisteredVehicles() {
 }
 
 void menu() {
-    cout << "\n==============================\n";
+    cout <<BLUE<< "\n==============================\n";
     cout << "Parking Management System Menu\n";
     cout << "==============================\n";
     cout << "1. Register Vehicle\n";
     cout << "2. Exit Vehicle and Calculate Fee\n";
     cout << "3. View Parking Report\n";
     cout << "4. Exit\n";
-    cout << "Enter your choice: ";
+    cout <<RESET<<"Enter your choice: ";
 }
 
 int main() {
@@ -250,16 +255,16 @@ int main() {
 
         switch (choice) {
         case 1:
-            cout << "Enter Owner name: ";
+            cout <<YELLOW<< "Enter Owner name: ";
             cin.ignore();
             getline(cin, name);
-            cout << "Enter your vehicle number: ";
+            cout <<YELLOW<< "Enter your vehicle number: ";
             getline(cin, num);
-            cout << "Enter your vehicle company: ";
+            cout <<YELLOW<< "Enter your vehicle company: ";
             getline(cin, vname);
-            cout << "Enter your vehicle type (Car/Bike): ";
+            cout <<YELLOW<< "Enter your vehicle type (Car/Bike): ";
             getline(cin, type);
-            cout << "Is the owner a VIP? (1 for Yes, 0 for No): ";
+            cout <<YELLOW<< "Is the owner a VIP? (1 for Yes, 0 for No): ";
             cin >> isVip;
 
             id = generateUniqueID();
@@ -271,7 +276,7 @@ int main() {
                 vehicles[vehicleCount] = new Bike();
             }
             else {
-                cout << "Invalid vehicle type! Registration failed. Please try again." << endl;
+                cout <<RED<< "Invalid vehicle type! Registration failed. Please try again." << endl;
                 break;
             }
 
@@ -279,13 +284,13 @@ int main() {
             saveVehicleDetails(name, num, vname, id);
             ParkingSlot::allocateSlot(isVip);  // Allocate slot after registration
             vehicleCount++;  // Increment the vehicle count
-            cout << "Assigned Vehicle ID: " << id << endl;
+            cout <<GREEN<< "Assigned Vehicle ID: " << id << endl;
             break;
 
         case 2:
             displayRegisteredVehicles();  // Show registered vehicles from file
 
-            cout << "Enter Vehicle ID to Exit: ";
+            cout <<YELLOW<< "Enter Vehicle ID to Exit: ";
             cin >> id;
 
 
@@ -295,7 +300,7 @@ int main() {
                     auto duration = duration_cast<std::chrono::seconds>(exitTime - vehicles[i]->getEntryTime());  // Calculate the time difference in hours
                     int seconds = duration.count();
 
-                    cout << "Vehicle was parked for " << seconds<< " hours." << endl;
+                    cout <<GREEN<< "Vehicle was parked for " << seconds<< " seconds" << endl;
 
 
                     vehicles[i]->calculateFee(seconds);
@@ -307,7 +312,7 @@ int main() {
             }
 
             if (!found) {
-                cout << "Invalid Vehicle ID!" << endl;
+                cout <<RED<< "Invalid Vehicle ID!" << endl;
             }
             break;
 
@@ -316,11 +321,11 @@ int main() {
             break;
 
         case 4:
-            cout << "Thank you for using the Parking Management System. Goodbye!\n";
+            cout <<GREEN<< "Thank you for using the Parking Management System. Goodbye!\n";
             break;
 
         default:
-            cout << "Invalid choice! Try again.\n";
+            cout <<RED<< "Invalid choice! Try again.\n";
         }
     } while (choice != 4);
 
