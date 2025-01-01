@@ -51,10 +51,10 @@ public:
 };
 
 class Car : public Vehicle {
-    void calculateFee(int hours) override {
-        int fee = hours * 50;
+    void calculateFee(int seconds) override {
+        int fee = seconds * 10;
         if (isVip) {
-            fee -= 10;  
+            fee -= 5;  
             cout << "VIP Discount Applied!" << endl;
         }
         fee = max(fee, 0);
@@ -64,10 +64,10 @@ class Car : public Vehicle {
 };
 
 class Bike : public Vehicle {
-    void calculateFee(int hours) override {
-        int fee = hours * 25;
+    void calculateFee(int seconds) override {
+        int fee = seconds* 5;
         if (isVip) {
-            fee -= 5;  
+            fee -= 2;  
             cout << "VIP Discount Applied!" << endl;
         }
         fee = max(fee, 0);
@@ -241,7 +241,7 @@ int main() {
     Car carInstance;
     Bike bikeInstance;
 
-    int choice, hours;
+    int choice, seconds;
     string num, name, type, vname, id;
     bool isVip, found = false;
     do {
@@ -265,10 +265,10 @@ int main() {
             id = generateUniqueID();
 
             if (type == "Car") {
-                vehicles[vehicleCount] = &carInstance;
+                vehicles[vehicleCount] = new Car();
             }
             else if (type == "Bike") {
-                vehicles[vehicleCount] = &bikeInstance;
+                vehicles[vehicleCount] = new Bike();
             }
             else {
                 cout << "Invalid vehicle type! Registration failed. Please try again." << endl;
@@ -292,13 +292,13 @@ int main() {
             for (int i = 0; i < vehicleCount; i++) {
                 if (vehicles[i]->getVehicleID() == id) {
                     auto exitTime = system_clock::now();
-                    auto duration = duration_cast<std::chrono::hours>(exitTime - vehicles[i]->getEntryTime());  // Calculate the time difference in hours
-                    int hours = duration.count();
+                    auto duration = duration_cast<std::chrono::seconds>(exitTime - vehicles[i]->getEntryTime());  // Calculate the time difference in hours
+                    int seconds = duration.count();
 
-                    cout << "Vehicle was parked for " << hours << " hours." << endl;
+                    cout << "Vehicle was parked for " << seconds<< " hours." << endl;
 
 
-                    vehicles[i]->calculateFee(hours);
+                    vehicles[i]->calculateFee(seconds);
                     ParkingSlot::freeSlot();  // Free slot after vehicle exits
                     removeVehicleDetails(id);  // Remove vehicle details from file
                     found = true;
