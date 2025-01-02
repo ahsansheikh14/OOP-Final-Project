@@ -343,6 +343,9 @@ int main() {
             cout << YELLOW << "Enter Vehicle ID to Exit: ";
             cin >> id;
 
+            
+
+            // First check in memory for vehicle
             for (int i = 0; i < vehicleCount; i++) {
                 if (vehicles[i]->getVehicleID() == id) {
                     auto exitTime = system_clock::now();
@@ -359,13 +362,7 @@ int main() {
                 }
             }
 
-            if (!found) {
-                cout << "Vehicle ID not found!" << endl;
-            }
-        
-
-
-            // If the ID is not found in memory, check the file
+            // If vehicle is not found in memory, check in the file
             if (!found) {
                 // Load all IDs from the file
                 vector<string> existingVehicleIDs = loadVehicleIDs();
@@ -373,8 +370,8 @@ int main() {
 
                 if (it != existingVehicleIDs.end()) {
                     cout << GREEN << "Vehicle ID found in file. Removing vehicle..." << endl;
-                    ParkingSlot::freeSlot();            // Free slot after vehicle exits
-                    removeVehicleDetails(id);           // Remove vehicle details from file
+                    ParkingSlot::freeSlot(); // Free slot after vehicle exits
+                    removeVehicleDetails(id); // Remove vehicle details from file
                 }
                 else {
                     cout << RED << "Invalid Vehicle ID!" << endl;
