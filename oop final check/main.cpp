@@ -225,6 +225,27 @@ void displayRegisteredVehicles() {
         cout << vehicleRecords[i] << endl;
     }
 }
+vector<string> loadVehicleIDs() {
+    vector<string> vehicleIDs;
+    ifstream file("vehicle_details.txt");
+    string line;
+
+    if (file.is_open()) {
+        while (getline(file, line)) {
+            if (line.find("Vehicle ID: ") != string::npos) {
+                // Extract the Vehicle ID from the line
+                string id = line.substr(line.find(": ") + 2);
+                vehicleIDs.push_back(id);
+            }
+        }
+        file.close();
+    }
+    else {
+        cout << RED << "Unable to open vehicle details file!" << endl;
+    }
+    return vehicleIDs;
+}
+
 
 void menu() {
     cout <<BLUE<< "\n==============================\n";
@@ -290,29 +311,41 @@ int main() {
         case 2:
             displayRegisteredVehicles();  // Show registered vehicles from file
 
-            cout <<YELLOW<< "Enter Vehicle ID to Exit: ";
+            cout << YELLOW << "Enter Vehicle ID to Exit: ";
             cin >> id;
 
-
+            // Check if the ID is in memory
+            found = false;
             for (int i = 0; i < vehicleCount; i++) {
                 if (vehicles[i]->getVehicleID() == id) {
                     auto exitTime = system_clock::now();
-                    auto duration = duration_cast<std::chrono::seconds>(exitTime - vehicles[i]->getEntryTime());  // Calculate the time difference in hours
+                    auto duration = duration_cast<std::chrono::seconds>(exitTime - vehicles[i]->getEntryTime());  // Calculate the time difference in seconds
                     int seconds = duration.count();
 
-                    cout <<GREEN<< "Vehicle was parked for " << seconds<< " seconds" << endl;
+                    cout << GREEN << "Vehicle was parked for " << seconds << " seconds" << endl;
 
-
-                    vehicles[i]->calculateFee(seconds);
-                    ParkingSlot::freeSlot();  // Free slot after vehicle exits
-                    removeVehicleDetails(id);  // Remove vehicle details from file
+                    vehicles[i]->calculateFee(seconds);  // Calculate parking fee
+                    ParkingSlot::freeSlot();            // Free slot after vehicle exits
+                    removeVehicleDetails(id);           // Remove vehicle details from file
                     found = true;
                     break;
                 }
             }
 
+            // If the ID is not found in memory, check the file
             if (!found) {
-                cout <<RED<< "Invalid Vehicle ID!" << endl;
+                // Load all IDs from the file
+                vector<string> existingVehicleIDs = loadVehicleIDs();
+                auto it = find(existingVehicleIDs.begin(), existingVehicleIDs.end(), id);
+
+                if (it != existingVehicleIDs.end()) {
+                    cout << GREEN << "Vehicle ID found in file. Removing vehicle..." << endl;
+                    ParkingSlot::freeSlot();            // Free slot after vehicle exits
+                    removeVehicleDetails(id);           // Remove vehicle details from file
+                }
+                else {
+                    cout << RED << "Invalid Vehicle ID!" << endl;
+                }
             }
             break;
 
