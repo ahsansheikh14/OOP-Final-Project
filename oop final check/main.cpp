@@ -135,22 +135,22 @@ string generateUniqueID() {
     return ss.str();
 }
 void saveVehicleDetails(const string& ownerName, const string& vehicleNumber, const string& vehicleName, const string& vehicleID) {
-    // Open file in append mode
+  
     ifstream file("vehicle_details.txt");
     string line;
     bool exists = false;
 
-    // Check if the vehicle already exists in the file
+  
     while (getline(file, line)) {
         if (line.find(vehicleID) != string::npos) {
-            exists = true;  // Vehicle ID already exists
+            exists = true;  
             break;
         }
     }
 
     file.close();
 
-    // Only write the details if the vehicle doesn't already exist
+   
     if (!exists) {
         ofstream file("vehicle_details.txt", ios::app);
         if (file.is_open()) {
@@ -189,29 +189,29 @@ void viewParkingReport() {
         cout << "Unable to open parking report file." << endl;
     }
 }
-// Function to remove vehicle details by ID
-void removeVehicleDetails(string vehicleID) {
-    ifstream file("vehicle_details.txt"); // Open file to read
-    string line;
-    vector<string> remainingData; // To store remaining vehicle data
 
-    // Read all vehicle data from the file and store it, skipping the removed vehicle
+void removeVehicleDetails(string vehicleID) {
+    ifstream file("vehicle_details.txt");
+    string line;
+    vector<string> remainingData; 
+
+    
     while (getline(file, line)) {
         if (line.find(vehicleID) == string::npos) {
-            remainingData.push_back(line); // Add all lines except the vehicle to remove
+            remainingData.push_back(line); 
         }
     }
     file.close();
 
-    // Rewrite the file with the remaining vehicle data
-    ofstream outFile("vehicle_details.txt", ios::out | ios::trunc); // Open file in write mode
+    
+    ofstream outFile("vehicle_details.txt", ios::out | ios::trunc); 
     for (const string& line : remainingData) {
-        outFile << line << endl; // Write each line back to the file
+        outFile << line << endl; 
     }
-    outFile.close(); // Close the file after writing
+    outFile.close(); 
 }
 
-// Function to exit a vehicle and remove from list
+
 void exitVehicleAndRemove() {
     string id;
     bool found = false;
@@ -246,7 +246,7 @@ vector<string> loadVehicleIDs() {
     if (file.is_open()) {
         while (getline(file, line)) {
             if (line.find("Vehicle ID: ") != string::npos) {
-                // Extract the Vehicle ID from the line
+                
                 string id = line.substr(line.find(": ") + 2);
                 vehicleIDs.push_back(id);
             }
@@ -274,8 +274,8 @@ void menu() {
 int main() {
     ParkingSlot::initializeSlots(50,10);
 
-    Vehicle* vehicles[50];  // Array to store pointers to vehicles
-    int vehicleCount = 0;    // Counter for registered vehicles
+    Vehicle* vehicles[50];  
+    int vehicleCount = 0;    
 
     Car carInstance;
     Bike bikeInstance;
@@ -297,7 +297,7 @@ int main() {
             cout << YELLOW << "Enter your vehicle number: ";
             getline(cin, num);
 
-            cout << YELLOW << "Enter your vehicle company: ";
+            cout << YELLOW << "Enter your vehicle name: ";
             getline(cin, vname);
 
             do {
@@ -313,8 +313,8 @@ int main() {
                 cout << YELLOW << "Is the owner a VIP? (1 for Yes, 0 for No): ";
                 if (!(cin >> isVip)) {
                     cout << RED << "Invalid input! Please enter 1 for Yes or 0 for No.\n";
-                    cin.clear();               // Clear the error flag
-                    cin.ignore(INT_MAX, '\n'); // Discard invalid input
+                    cin.clear();             
+                    cin.ignore(INT_MAX, '\n'); 
                 }
                 else if (isVip != 0 && isVip != 1) {
                     cout << RED << "Invalid input! Please enter 1 for Yes or 0 for No.\n";
@@ -332,12 +332,12 @@ int main() {
 
             vehicles[vehicleCount]->setDetails(name, num, vname, id, isVip);
             saveVehicleDetails(name, num, vname, id);
-            ParkingSlot::allocateSlot(isVip); // Allocate slot after registration
-            vehicleCount++;                   // Increment the vehicle count
+            ParkingSlot::allocateSlot(isVip); 
+            vehicleCount++;                  
             cout << GREEN << "Assigned Vehicle ID: " << id << endl;
             break;
         case 2:
-            // Display Registered Vehicles
+           
             displayRegisteredVehicles();
 
             cout << YELLOW << "Enter Vehicle ID to Exit: ";
@@ -345,7 +345,7 @@ int main() {
 
             
 
-            // First check in memory for vehicle
+          
             for (int i = 0; i < vehicleCount; i++) {
                 if (vehicles[i]->getVehicleID() == id) {
                     auto exitTime = system_clock::now();
@@ -354,24 +354,24 @@ int main() {
 
                     cout << "Vehicle was parked for " << seconds << " seconds" << endl;
 
-                    vehicles[i]->calculateFee(seconds); // Calculate parking fee
-                    ParkingSlot::freeSlot(); // Free the parking slot
-                    removeVehicleDetails(id); // Remove vehicle from file
+                    vehicles[i]->calculateFee(seconds); 
+                    ParkingSlot::freeSlot(); 
+                    removeVehicleDetails(id); 
                     found = true;
                     break;
                 }
             }
 
-            // If vehicle is not found in memory, check in the file
+           
             if (!found) {
-                // Load all IDs from the file
+                
                 vector<string> existingVehicleIDs = loadVehicleIDs();
                 auto it = find(existingVehicleIDs.begin(), existingVehicleIDs.end(), id);
 
                 if (it != existingVehicleIDs.end()) {
                     cout << GREEN << "Vehicle ID found in file. Removing vehicle..." << endl;
-                    ParkingSlot::freeSlot(); // Free slot after vehicle exits
-                    removeVehicleDetails(id); // Remove vehicle details from file
+                    ParkingSlot::freeSlot(); 
+                    removeVehicleDetails(id); 
                 }
                 else {
                     cout << RED << "Invalid Vehicle ID!" << endl;
